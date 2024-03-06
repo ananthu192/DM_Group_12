@@ -1,0 +1,126 @@
+---
+title: "Data_gen"
+output: html_document
+date: "2024-02-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(RSQLite)
+```
+
+```{r defineconnection}
+my_connection <- RSQLite::dbConnect(RSQLite::SQLite(),"ecomm.db")
+```
+
+
+```{sql connection=my_connection}
+CREATE TABLE Customers (
+    cust_id INT PRIMARY KEY,
+    cust_contact VARCHAR(11) NOT NULL CHECK (cust_contact LIKE '[0-9]%'),
+    cust_email VARCHAR(100) NOT NULL UNIQUE CHECK (cust_email LIKE '%@%.%'),
+    cust_dob DATE CHECK (cust_dob <= CURRENT_DATE),
+    cust_gender CHAR(1) CHECK (cust_gender IN ('M', 'F', 'O')),
+    cust_fname VARCHAR(100) NOT NULL,
+    cust_lname VARCHAR(100),
+    cust_city VARCHAR(100) NOT NULL,
+    cust_zipcode VARCHAR(100) NOT NULL,
+    cust_address VARCHAR(100) NOT NULL,
+    cust_active BOOLEAN NOT NULL,
+    cust_type VARCHAR(100) NOT NULL,
+    cust_date_created DATE CHECK (cust_date_created <= CURRENT_DATE)
+    );
+
+
+```
+
+```{sql connection=my_connection}
+CREATE TABLE Orders (
+  order_id INT PRIMARY KEY,
+  cust_id INT NOT NULL,
+  product_id INT NOT NULL,
+  order_status VARCHAR (50) NOT NULL CHECK (order_status IN ('Pending', 'Processing', 'Shipped', 'Delivered')),
+  order_date DATE,
+  order_quantity INT
+  );
+```
+
+
+```{sql connection=my_connection}
+CREATE TABLE Suppliers (
+  supplier_id INT PRIMARY KEY,
+  supplier_name VARCHAR(100) NOT NULL,
+  supplier_city VARCHAR(100)  NOT NULL,
+  supplier_address VARCHAR(100) NOT NULL,
+  supplier_zipcode VARCHAR(10) NOT NULL,
+  supplier_email VARCHAR(100) NOT NULL UNIQUE CHECK (supplier_email LIKE '%@%.%'),
+  supplier_contact VARCHAR(11) NOT NULL CHECK (supplier_contact LIKE '[0-9]%')
+  );
+```
+
+```{sql connection=my_connection}
+CREATE TABLE Products (
+  product_id INT PRIMARY KEY,
+  supplier_id INT NOT NULL,
+  product_name VARCHAR(100) NOT NULL,
+  product_description TEXT,
+  product_price DECIMAL (10,2) NOT NULL,
+  product_lengh DECIMAL (10,2) NOT NULL,
+  product_height DECIMAL (10,2) NOT NULL,
+  product_width DECIMAL (10,2) NOT NULL,
+  product_weight DECIMAL (10,2) NOT NULL,
+  product_code VARCHAR(100) NOT NULL
+  );
+```
+
+```{sql connection=my_connection}
+CREATE TABLE Advertisement (
+  ads_id INT PRIMARY KEY,
+  product_id INT NOT NULL,
+  supplier_id INT NOT NULL,
+  ads_details TEXT,
+  ads_name VARCHAR (255) NOT NULL,
+  product_discount DECIMAL(3,2) CHECK (product_discount >= 0 AND product_discount <= 100)
+  );
+```
+
+```{sql connection=my_connection}
+
+CREATE TABLE Payment (
+  payment_id INT PRIMARY KEY,
+  cust_id INT NOT NULL,
+  order_item_id INT NOT NULL,
+  payment_status VARCHAR(50) NOT NULL CHECK (payment_status IN ('Pending', 'Processing', 'Completed', 'Failed')),
+  payment_method VARCHAR(50) NOT NULL CHECK (payment_method IN ('Credit Card', 'Debit Card', 'PayPal', 'Bank Transfer'))
+  );
+  
+```
+
+```{sql connection=my_connection}
+CREATE TABLE Order_items (
+  order_item_id INT PRIMARY KEY,
+  product_id INT NOT NULL,
+  order_item_quantity INT NOT NULL,
+  order_item_price DECIMAL (10,2) NOT NULL
+  );
+```
+
+```{sql connection=my_connection}
+CREATE TABLE Shipment (
+  shipment_id INT PRIMARY KEY,
+  order_id INT NOT NULL,
+  cust_id INT NOT NULL,
+  shipment_date DATE CHECK(shipment_date >= CURRENT_DATE),
+  shipment_company VARCHAR(100) NOT NULL,
+  cust_address VARCHAR(100) NOT NULL,
+  shipment_status VARCHAR (20) CHECK (shipment_status IN ('Pending', 'In Transit', 'Delivered', 'Cancelled'))
+  );
+```
+
+```{sql connection=my_connection}
+SELECT *
+FROM Advertisement
+```
